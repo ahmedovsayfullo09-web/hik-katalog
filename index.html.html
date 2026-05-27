@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html class="light" lang="uz">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>HIKVISION - SAYFULLOH (PROTECTED)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+<script>
+const OWNER_USERNAME = "hikvision_23"; // Telegram useringiz
+const ADMIN_PASS = "1234"; // ADMIN PAROLI (Buni o'zgartiring)
+const DEFAULT_LOGO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='20' fill='%23C8161D'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-weight='900' font-size='50' fill='white'%3EHIK%3C/text%3E%3C/svg%3E";
+
+const i18n = {
+    uz: { splash_btn: "Katalogga Kirish", shop_title: "Barcha Mahsulotlar", cat_cam: "IP Kameralar", cat_dvr: "DVR/NVR", cat_acc: "Aksessuarlar", cat_all: "Barchasi", bag_title: "Savatcha", bag_empty: "Savatingiz bo'sh", total: "Jami:", buy_btn: "Telegram orqali Buyurtma Berish", add_prod: "Yangi Mahsulot Qo'shish", import_csv: "Excel dan Import Qilish", save: "Saqlash", settings: "Sozlamalar", del_data: "Barchasini O'chirish", edit_prof: "Ma'lumotlarni O'zgartirish", change_logo: "Logotipni O'zgartirish", prod_name: "Mahsulot Nomi", prod_price: "Narxi (so'm)", prod_cat: "Kategoriya", prod_desc: "Xarakteristikasi", to_cart: "Savatga Qo'shish", added: "Qo'shildi!", saved: "Saqlandi!", enter_pass: "Admin parolini kiriting", wrong_pass: "Noto'g'ri parol!", confirm: "Tasdiqlash" },
+    ru: { splash_btn: "Войти в каталог", shop_title: "Все товары", cat_cam: "IP Камеры", cat_dvr: "DVR/NVR", cat_acc: "Аксессуары", cat_all: "Все", bag_title: "Корзина", bag_empty: "Корзина пуста", total: "Итого:", buy_btn: "Заказать через Telegram", add_prod: "Добавить товар", import_csv: "Импорт из Excel", save: "Сохранить", settings: "Настройки", del_data: "Удалить все", edit_prof: "Изменить профиль", change_logo: "Изменить логотип", prod_name: "Название товара", prod_price: "Цена (сум)", prod_cat: "Категория", prod_desc: "Характеристики", to_cart: "В корзину", added: "Добавлено!", saved: "Сохранено!", enter_pass: "Введите пароль администратора", wrong_pass: "Неверный пароль!", confirm: "Подтвердить" }
+};
+
+tailwind.config = {
+    darkMode: "class",
+    theme: { extend: { colors: { "primary": "#C8161D", "surface": "#F8F9FA", "on-surface": "#121212" }, fontFamily: { "headline": ["Epilogue"], "body": ["Inter"] } } }
+}
+</script>
+<style>
+    body { background-color: #F8F9FA; -webkit-tap-highlight-color: transparent; color: #121212; font-family: 'Inter', sans-serif; }
+    .dark body { background-color: #121212; color: #E0E0E0; }
+    .dark .bg-white { background-color: #1E1E1E !important; }
+    .dark .text-gray-500 { color: #999 !important; }
+    .dark .text-primary { color: #FF5252 !important; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    #splash-screen { transition: opacity 0.8s; }
+    #splash-screen.hidden-splash { opacity: 0; visibility: hidden; pointer-events: none; }
+    .page { display: none; } .page.active { display: block; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-overlay { transition: opacity 0.3s; pointer-events: none; opacity: 0; }
+    .modal-overlay.show { pointer-events: all; opacity: 1; }
+    .modal-content { transition: transform 0.3s; transform: translateY(100%); }
+    .modal-overlay.show .modal-content { transform: translateY(0); }
+    .toast { transition: all 0.3s; transform: translateY(-20px); opacity: 0; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div id="splash-screen" class="fixed inset-0 z-[100] bg-[#C8161D] flex flex-col items-center justify-center px-6 text-center text-white">
+    <svg width="120" height="120" viewBox="0 0 100 100" class="mb-6 animate-bounce">
+        <path d="M50 0L80 15V40C80 65 65 85 50 90C35 85 20 65 20 40V15L50 0Z" fill="white" fill-opacity="0.2"/>
+        <text x="50" y="60" text-anchor="middle" font-family="Arial" font-weight="900" font-size="28" fill="white">HIK</text>
+    </svg>
+    <h1 class="text-3xl font-bold tracking-wider mb-2">HIKVISION</h1>
+    <p class="text-white/70 text-sm">Sayfulloh Store</p>
+    <button onclick="enterApp()" class="mt-12 bg-white text-[#C8161D] font-bold py-3 px-10 rounded-full shadow-lg active:scale-95 transition">
+        <span data-i18n="splash_btn">Katalogga Kirish</span>
+    </button>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast fixed top-20 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-xl font-medium z-[90]">
+    <span id="toast-msg">Success</span>
+</div>
+
+<!-- HEADER -->
+<header class="fixed top-0 w-full z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-b border-gray-200 flex justify-between items-center px-4 h-16">
+    <div class="flex items-center gap-3">
+        <img id="header-logo" src="" class="w-10 h-10 object-contain rounded-lg">
+        <div>
+            <h1 class="font-bold text-sm leading-none dark:text-white" id="header-brand">Hikvision</h1>
+            <span class="text-[10px] text-gray-500" id="header-admin">Sayfulloh</span>
+        </div>
+    </div>
+    <div class="flex gap-3">
+         <button onclick="setLang('uz')" class="text-xs font-bold bg-gray-100 px-2 py-1 rounded">UZ</button>
+         <button onclick="setLang('ru')" class="text-xs font-bold bg-gray-100 px-2 py-1 rounded">RU</button>
+        <button onclick="navigate('bag')" class="relative">
+            <span class="material-symbols-outlined text-primary text-2xl">shopping_bag</span>
+            <span id="header-badge" class="hidden absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] flex items-center justify-center rounded-full">0</span>
+        </button>
+    </div>
+</header>
+
+<!-- MAIN -->
+<main class="pt-16 pb-20 min-h-screen">
+    <!-- SHOP -->
+    <div id="page-shop" class="page active px-4 pt-6 pb-6">
+        <h2 class="font-bold text-2xl mb-4 dark:text-white" data-i18n="shop_title">Barcha Mahsulotlar</h2>
+        <div class="flex gap-2 overflow-x-auto hide-scrollbar mb-6">
+            <button onclick="filterByCategory('ALL')" class="cat-pill px-4 py-2 rounded-full bg-primary text-white text-sm font-bold whitespace-nowrap" data-i18n="cat_all">Barchasi</button>
+            <button onclick="filterByCategory('CAM')" class="cat-pill px-4 py-2 rounded-full bg-white dark:bg-gray-800 text-gray-600 border border-gray-200 dark:border-gray-700 text-sm font-bold whitespace-nowrap" data-i18n="cat_cam">Kameralar</button>
+            <button onclick="filterByCategory('DVR')" class="cat-pill px-4 py-2 rounded-full bg-white dark:bg-gray-800 text-gray-600 border border-gray-200 dark:border-gray-700 text-sm font-bold whitespace-nowrap" data-i18n="cat_dvr">DVR</button>
+            <button onclick="filterByCategory('ACC')" class="cat-pill px-4 py-2 rounded-full bg-white dark:bg-gray-800 text-gray-600 border border-gray-200 dark:border-gray-700 text-sm font-bold whitespace-nowrap" data-i18n="cat_acc">Aksessuarlar</button>
+        </div>
+        <div id="catalog-grid" class="grid grid-cols-2 gap-4"></div>
+    </div>
+
+    <!-- BAG -->
+    <div id="page-bag" class="page px-4 pt-6">
+        <h2 class="font-bold text-2xl mb-6 dark:text-white" data-i18n="bag_title">Savatcha</h2>
+        <div id="cart-list" class="space-y-4 pb-48"></div>
+        <div id="cart-empty" class="hidden text-center py-20 text-gray-500" data-i18n="bag_empty">Savatingiz bo'sh</div>
+    </div>
+
+    <!-- EXPLORE -->
+    <div id="page-explore" class="page px-4 pt-6">
+        <h2 class="font-bold text-2xl mb-6 dark:text-white" data-i18n="cat_all">Bo'limlar</h2>
+        <div class="grid grid-cols-1 gap-4">
+            <div onclick="filterByCategory('CAM')" class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden"><h3 class="font-bold text-xl dark:text-white" data-i18n="cat_cam">IP Kameralar</h3></div>
+            <div onclick="filterByCategory('DVR')" class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden"><h3 class="font-bold text-xl dark:text-white" data-i18n="cat_dvr">Registratorlar</h3></div>
+            <div onclick="filterByCategory('ACC')" class="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden"><h3 class="font-bold text-xl dark:text-white" data-i18n="cat_acc">Aksessuarlar</h3></div>
+        </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="page-profile" class="page px-4 pt-6">
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 shadow-sm mb-4 flex items-center gap-4" onclick="openModal('modal-edit-profile')">
+            <img id="profile-img-placeholder" src="" class="w-16 h-16 rounded-xl bg-gray-100 object-contain p-2">
+            <div class="flex-1">
+                <h2 class="font-bold text-lg dark:text-white" id="profile-store-name">Hikvision Store</h2>
+                <p class="text-xs text-gray-500" id="profile-admin-name">Sayfulloh</p>
+            </div>
+            <span class="material-symbols-outlined text-gray-400">edit</span>
+        </div>
+
+        <button onclick="openModal('modal-logo')" class="w-full mb-3 border-2 border-dashed border-primary text-primary font-bold py-3 rounded-xl flex items-center justify-center gap-2" data-i18n="change_logo">
+            Logotipni O'zgartirish
+        </button>
+
+        <button onclick="openModal('modal-add-product')" class="w-full mb-3 bg-primary text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2" data-i18n="add_prod">
+            <span class="material-symbols-outlined">add_circle</span> Mahsulot Qo'shish
+        </button>
+
+        <button onclick="document.getElementById('csv-file-btn').click()" class="w-full mb-6 bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2" data-i18n="import_csv">
+            <span class="material-symbols-outlined">upload_file</span> Excel dan Import Qilish
+        </button>
+        <input type="file" id="csv-file-btn" class="hidden" accept=".csv" onchange="handleCSVUpload(event)">
+
+        <button onclick="clearAllData()" class="w-full p-4 bg-red-50 text-red-600 rounded-xl font-bold mb-20" data-i18n="del_data">
+            Barcha Ma'lumotlarni O'chirish
+        </button>
+    </div>
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="fixed bottom-0 w-full bg-white dark:bg-gray-900 border-t border-gray-200 flex justify-around items-center h-16 z-50">
+    <button onclick="navigate('shop')" class="nav-btn flex flex-col items-center text-primary pt-2" data-page="shop"><span class="material-symbols-outlined">storefront</span></button>
+    <button onclick="navigate('explore')" class="nav-btn flex flex-col items-center text-gray-400 pt-2" data-page="explore"><span class="material-symbols-outlined">grid_view</span></button>
+    <button onclick="navigate('bag')" class="nav-btn flex flex-col items-center text-gray-400 pt-2 relative" data-page="bag"><span class="material-symbols-outlined">shopping_cart"></span><span id="nav-badge" class="hidden absolute top-1 right-2 w-4 h-4 bg-red-500 text-white text-[8px] rounded-full flex items-center justify-center">0</span></button>
+    <button onclick="checkAuthAndNavigate('profile')" class="nav-btn flex flex-col items-center text-gray-400 pt-2" data-page="profile"><span class="material-symbols-outlined">person</span></button>
+</nav>
+
+<!-- MODAL: PASSWORD CHECK (NEW) -->
+<div class="fixed inset-0 z-[90] bg-black/50 modal-overlay flex items-center justify-center" id="modal-password">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl w-11/12 max-w-sm shadow-2xl text-center">
+        <span class="material-symbols-outlined text-5xl text-primary mb-4">lock</span>
+        <h3 class="font-bold text-xl mb-2 dark:text-white" data-i18n="enter_pass">Admin parolini kiriting</h3>
+        <input type="password" id="inp-password" class="w-full border-2 border-gray-200 rounded-xl p-3 text-center text-xl font-bold tracking-widest mb-4 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="****">
+        <button onclick="verifyPassword()" class="w-full bg-primary text-white font-bold py-3 rounded-xl" data-i18n="confirm">Tasdiqlash</button>
+        <button onclick="closeModal('modal-password'); navigate('shop')" class="w-full mt-2 text-gray-500 text-sm">Bekor qilish</button>
+    </div>
+</div>
+
+<!-- MODAL: ADD PRODUCT -->
+<div class="fixed inset-0 z-[80] bg-black/50 modal-overlay" id="modal-add-product">
+    <div class="modal-content absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-900 rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto">
+        <h3 class="font-bold text-xl mb-4 dark:text-white" data-i18n="add_prod">Yangi Mahsulot</h3>
+        <label class="block w-full h-40 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 cursor-pointer mb-4">
+            <input type="file" id="real-file-btn" class="hidden" accept="image/*" onchange="handleImageUpload(event)">
+            <img id="img-preview" class="hidden w-full h-full object-cover rounded-xl">
+            <div id="img-placeholder" class="text-center"><span class="material-symbols-outlined text-3xl text-gray-400">add_a_photo</span><p class="text-xs text-gray-500 mt-1">Rasmni tanlang</p></div>
+        </label>
+        <div class="space-y-3">
+            <input type="text" id="inp-name" placeholder="Mahsulot nomi" class="w-full border rounded-lg p-3 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+            <input type="number" id="inp-price" placeholder="Narxi (so'm)" class="w-full border rounded-lg p-3 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+            <select id="inp-cat" class="w-full border rounded-lg p-3 dark:bg-gray-800 dark:border-gray-700 dark:text-white"><option value="CAM">IP Kamera</option><option value="DVR">DVR / NVR</option><option value="ACC">Aksessuar</option></select>
+            <textarea id="inp-desc" rows="3" placeholder="Xarakteristikasi..." class="w-full border rounded-lg p-3 dark:bg-gray-800 dark:border-gray-700 dark:text-white text-sm"></textarea>
+            <button onclick="addNewProduct()" class="w-full bg-primary text-white font-bold py-3 rounded-xl" data-i18n="save">Saqlash</button>
+        </div>
+        <button onclick="closeModal('modal-add-product')" class="absolute top-4 right-4 text-gray-500">X</button>
+    </div>
+</div>
+
+<!-- MODAL: EDIT PROFILE -->
+<div class="fixed inset-0 z-[80] bg-black/50 modal-overlay" id="modal-edit-profile">
+    <div class="modal-content absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-900 rounded-t-3xl p-6">
+        <h3 class="font-bold text-xl mb-4 dark:text-white" data-i18n="edit_prof">Profilni o'zgartirish</h3>
+        <input type="text" id="inp-store-name" placeholder="Do'kon nomi" class="w-full border rounded-lg p-3 mb-3 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+        <input type="text" id="inp-admin-name" placeholder="Admin ismi" class="w-full border rounded-lg p-3 mb-4 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+        <button onclick="saveProfile()" class="w-full bg-primary text-white font-bold py-3 rounded-xl" data-i18n="save">Saqlash</button>
+        <button onclick="closeModal('modal-edit-profile')" class="absolute top-4 right-4 text-gray-500">X</button>
+    </div>
+</div>
+
+<!-- MODAL: CHANGE LOGO -->
+<div class="fixed inset-0 z-[80] bg-black/50 modal-overlay" id="modal-logo">
+    <div class="modal-content absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-900 rounded-t-3xl p-6">
+        <h3 class="font-bold text-xl mb-4 dark:text-white" data-i18n="change_logo">Logotipni O'zgartirish</h3>
+        <label class="block w-full h-40 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 cursor-pointer mb-4">
+            <input type="file" id="logo-file-btn" class="hidden" accept="image/*" onchange="handleLogoUpload(event)">
+            <img id="logo-preview" class="hidden w-full h-full object-contain p-4">
+            <div id="logo-placeholder" class="text-center"><span class="material-symbols-outlined text-3xl text-gray-400">image</span><p class="text-xs text-gray-500 mt-1">Logotipni tanlang</p></div>
+        </label>
+        <button onclick="saveLogo()" class="w-full bg-primary text-white font-bold py-3 rounded-xl" data-i18n="save">Saqlash</button>
+        <button onclick="closeModal('modal-logo')" class="absolute top-4 right-4 text-gray-500">X</button>
+    </div>
+</div>
+
+<script>
+    let state = {
+        products: [
+            { id: 1, name: "Hikvision Dome 4MP", price: 850000, cat: "CAM", img: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=500", desc: "4MP, IR 30m, Dome kamera." },
+            { id: 2, name: "Hikvision NVR 8CH", price: 2100000, cat: "DVR", img: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?w=500", desc: "8 Kanalli, 4K qayd qilish." }
+        ],
+        cart: [],
+        settings: { darkMode: false, lang: 'uz' },
+        profile: { storeName: "Hikvision Store", adminName: "Sayfulloh" },
+        customLogo: null,
+        currentFilter: 'ALL'
+    };
+    let tempImg = null;
+    let tempLogo = null;
+
+    try { if(localStorage.getItem('hik_sayfulloh')) { const saved = JSON.parse(localStorage.getItem('hik_sayfulloh')); state = { ...state, ...saved }; } } catch(e) {}
+
+    function saveState() { try { localStorage.setItem('hik_sayfulloh', JSON.stringify(state)); } catch(e) { showToast("Xotira to'ldi!"); } }
+    function setLang(lang) { state.settings.lang = lang; saveState(); applyLang(); }
+    function applyLang() { const t = i18n[state.settings.lang]; document.querySelectorAll('[data-i18n]').forEach(el => { if(t[el.dataset.i18n]) el.innerText = t[el.dataset.i18n]; }); renderShop(); renderCart(); }
+    function enterApp() { document.getElementById('splash-screen').classList.add('hidden-splash'); init(); }
+    
+    // --- AUTHENTICATION LOGIC ---
+    function checkAuthAndNavigate(page) {
+        // Profil sahifasiga kirishda parol so'rash
+        document.getElementById('inp-password').value = "";
+        openModal('modal-password');
+    }
+
+    function verifyPassword() {
+        const inputPass = document.getElementById('inp-password').value;
+        if(inputPass === ADMIN_PASS) {
+            closeModal('modal-password');
+            navigate('profile');
+            showToast("Hush kelibsiz, Admin!");
+        } else {
+            showToast(i18n[state.settings.lang].wrong_pass);
+            document.getElementById('inp-password').value = "";
+        }
+    }
+
+    function navigate(page) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + page).classList.add('active');
+        document.querySelectorAll('.nav-btn').forEach(btn => { 
+            btn.classList.toggle('text-primary', btn.dataset.page === page); 
+            btn.classList.toggle('text-gray-400', btn.dataset.page !== page); 
+        });
+        if(page === 'shop') renderShop(); if(page === 'bag') renderCart();
+    }
+
+    function openModal(id) {
+        if(id === 'modal-edit-profile') { document.getElementById('inp-store-name').value = state.profile.storeName; document.getElementById('inp-admin-name').value = state.profile.adminName; }
+        document.getElementById(id).classList.add('show');
+    }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    // --- IMAGE & PRODUCT LOGIC ---
+    function handleImageUpload(event) {
+        const file = event.target.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 600; let width = img.width, height = img.height;
+                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                const isLogo = event.target.id === 'logo-file-btn';
+                if(isLogo) { tempLogo = dataUrl; document.getElementById('logo-preview').src = tempLogo; document.getElementById('logo-preview').classList.remove('hidden'); document.getElementById('logo-placeholder').classList.add('hidden'); }
+                else { tempImg = dataUrl; document.getElementById('img-preview').src = tempImg; document.getElementById('img-preview').classList.remove('hidden'); document.getElementById('img-placeholder').classList.add('hidden'); }
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function addNewProduct() {
+        const name = document.getElementById('inp-name').value; const price = document.getElementById('inp-price').value; const cat = document.getElementById('inp-cat').value; const desc = document.getElementById('inp-desc').value;
+        if(!name || !price) return showToast("Ism va narxni kiriting");
+        state.products.unshift({ id: Date.now(), name, price: parseInt(price), cat, desc: desc || "Ma'lumot yo'q", img: tempImg || "https://placehold.co/600x600/eee/999?text=No+Img" });
+        saveState(); closeModal('modal-add-product'); renderShop(); showToast(i18n[state.settings.lang].saved);
+        document.getElementById('inp-name').value = ""; document.getElementById('inp-price').value = ""; document.getElementById('inp-desc').value = ""; tempImg = null; document.getElementById('img-preview').classList.add('hidden'); document.getElementById('img-placeholder').classList.remove('hidden');
+    }
+
+    function saveProfile() {
+        const name = document.getElementById('inp-store-name').value; const admin = document.getElementById('inp-admin-name').value;
+        if(name) state.profile.storeName = name; if(admin) state.profile.adminName = admin;
+        updateProfileUI(); saveState(); closeModal('modal-edit-profile'); showToast(i18n[state.settings.lang].saved);
+    }
+    function saveLogo() { if(tempLogo) state.customLogo = tempLogo; saveState(); updateProfileUI(); closeModal('modal-logo'); showToast(i18n[state.settings.lang].saved); }
+    function updateProfileUI() {
+        const logo = state.customLogo || DEFAULT_LOGO;
+        document.getElementById('header-logo').src = logo; document.getElementById('profile-img-placeholder').src = logo;
+        document.getElementById('header-brand').innerText = state.profile.storeName; document.getElementById('header-admin').innerText = state.profile.adminName;
+        document.getElementById('profile-store-name').innerText = state.profile.storeName; document.getElementById('profile-admin-name').innerText = state.profile.adminName;
+    }
+
+    function renderShop() {
+        const grid = document.getElementById('catalog-grid'); let items = state.products;
+        if(state.currentFilter !== 'ALL') items = items.filter(p => p.cat === state.currentFilter);
+        document.querySelectorAll('.cat-pill').forEach(btn => {
+            if(btn.dataset.filter === state.currentFilter) btn.className = "cat-pill px-4 py-2 rounded-full bg-primary text-white text-sm font-bold whitespace-nowrap";
+            else btn.className = "cat-pill px-4 py-2 rounded-full bg-white dark:bg-gray-800 text-gray-600 border border-gray-200 dark:border-gray-700 text-sm font-bold whitespace-nowrap";
+        });
+        grid.innerHTML = items.map(p => `
+            <div class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700" onclick="viewProduct(${p.id})">
+                <div class="aspect-square bg-gray-100"><img src="${p.img}" class="w-full h-full object-cover"></div>
+                <div class="p-3"><h4 class="font-bold text-sm truncate dark:text-white">${p.name}</h4><p class="font-bold text-primary mt-1">${formatMoney(p.price)}</p></div>
+            </div>`).join('');
+    }
+    function filterByCategory(cat) { state.currentFilter = cat; navigate('shop'); }
+
+    function renderCart() {
+        const list = document.getElementById('cart-list'); const empty = document.getElementById('cart-empty');
+        if(state.cart.length === 0) { list.innerHTML = ""; empty.classList.remove('hidden'); return; }
+        empty.classList.add('hidden'); let total = 0;
+        list.innerHTML = state.cart.map(item => {
+            total += item.price * item.qty;
+            return `<div class="bg-white dark:bg-gray-800 p-3 rounded-xl flex gap-3 items-center shadow-sm">
+                <img src="${item.img}" class="w-16 h-16 rounded-lg object-cover">
+                <div class="flex-1"><h4 class="font-bold text-sm dark:text-white">${item.name}</h4><p class="text-xs text-gray-500">${formatMoney(item.price)}</p>
+                    <div class="flex items-center gap-3 mt-1">
+                        <button onclick="changeQty(${item.id}, -1)" class="w-6 h-6 bg-gray-100 rounded text-xs">-</button>
+                        <span class="text-xs font-bold">${item.qty}</span>
+                        <button onclick="changeQty(${item.id}, 1)" class="w-6 h-6 bg-gray-100 rounded text-xs">+</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+        list.innerHTML += `<div class="fixed bottom-20 left-0 right-0 p-4 bg-white border-t dark:bg-gray-900 dark:border-gray-700 z-40"><div class="max-w-md mx-auto"><div class="flex justify-between mb-3"><span class="text-gray-500" data-i18n="total">${i18n[state.settings.lang].total}</span><span class="font-bold text-xl dark:text-white">${formatMoney(total)}</span></div><a href="#" onclick="sendToTelegram(); return false;" class="w-full bg-[#0088cc] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 block text-center"><span class="material-symbols-outlined text-sm">send</span> ${i18n[state.settings.lang].buy_btn}</a></div></div>`;
+    }
+    function viewProduct(id) {
+        const p = state.products.find(x => x.id === id); if(!p) return;
+        const existing = state.cart.find(i => i.id === id);
+        if(existing) existing.qty++; else state.cart.push({ ...p, qty: 1 });
+        saveState(); updateBadges(); showToast(i18n[state.settings.lang].added);
+    }
+    function changeQty(id, val) {
+        const item = state.cart.find(i => i.id === id);
+        if(item) { item.qty += val; if(item.qty <= 0) state.cart = state.cart.filter(i => i.id !== id); }
+        saveState(); renderCart(); updateBadges();
+    }
+    function updateBadges() {
+        const count = state.cart.reduce((a, b) => a + b.qty, 0);
+        document.getElementById('header-badge').innerText = count; document.getElementById('nav-badge').innerText = count;
+        ['header-badge', 'nav-badge'].forEach(id => { document.getElementById(id).classList.toggle('hidden', count === 0); });
+    }
+    function sendToTelegram() {
+        if(state.cart.length === 0) return;
+        let text = "🛒 *Yangi Buyurtma!*\n\n"; let total = 0;
+        state.cart.forEach((item, i) => { const sum = item.price * item.qty; total += sum; text += `${i+1}. ${item.name}\n   Miqdor: ${item.qty} ta\n   Narx: ${formatMoney(sum)}\n\n`; });
+        text += `💰 *Jami: ${formatMoney(total)}*`;
+        window.open(`https://t.me/${OWNER_USERNAME}?text=${encodeURIComponent(text)}`, '_blank');
+        state.cart = []; saveState(); updateBadges(); renderCart();
+    }
+    function clearAllData() { if(confirm("Hamma narsani o'chirishni xohlaysizmi?")) { localStorage.removeItem('hik_sayfulloh'); location.reload(); } }
+
+    // --- CSV IMPORT ---
+    function handleCSVUpload(event) {
+        const file = event.target.files[0]; if (!file) return;
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                let count = 0;
+                results.data.forEach(row => {
+                    const name = row["Nomi"] || row["Name"];
+                    const price = row["Narxi"] || row["Price"];
+                    const cat = row["Kategoriya"] || row["Cat"];
+                    const desc = row["Xarakteristika"] || row["Desc"];
+                    const img = row["Rasm"] || row["Img"];
+                    if(name && price && cat) {
+                        state.products.push({
+                            id: Date.now() + Math.random(),
+                            name: name,
+                            price: parseInt(price),
+                            cat: cat.toUpperCase(),
+                            desc: desc || "Ma'lumot yo'q",
+                            img: img || "https://placehold.co/600x600?text=No+Image"
+                        });
+                        count++;
+                    }
+                });
+                saveState(); renderShop(); showToast(`${count} ta mahsulot qo'shildi!`);
+                document.getElementById('csv-file-btn').value = "";
+            }
+        });
+    }
+
+    function formatMoney(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " so'm"; }
+    function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toast-msg').innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
+    function init() { applyLang(); updateProfileUI(); renderShop(); updateBadges(); if(state.settings.darkMode) document.documentElement.classList.add('dark'); }
+    init();
+</script>
+</body>
+</html>S
